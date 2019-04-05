@@ -15,3 +15,5 @@ The maps [here](https://medium.com/@sohanmurthy/visualizing-americas-health-care
 
 ### 2. Understand the Factors Correllated with Time-to-Hospital
 We would like to understand how demographic and socioeconomic factors are associated with travel time to hospital, to better understand the populations affected by healthcare deserts.  If possible, we would also like to understand the association between time-to-hospital and health outcomes.
+
+_Each of these aims has an associated Project Board, where we can track goals and progress_
