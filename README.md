@@ -1,5 +1,6 @@
 # Health Dessert Maps
-## Authors: Rachael C. "Rocky" Aikens, Benjamin Huynh, Elizabeth Chin, ksamuelg (full name?) and mgchavez(full name?)
+## Authors:
+Rachael C. "Rocky" Aikens, Benjamin Huynh, Elizabeth Chin, ksamuelg (full name?) and mgchavez(full name?)
 
 ## Purpose
 
