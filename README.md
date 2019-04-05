@@ -12,7 +12,7 @@ We can start with the following two aims, which will probably overlap in many pl
 
 _Each of these aims has an associated Project Board, where we can track goals and progress_
 
-### 1.  Design a Pipeline to Generate Heat Maps of Travel time to Hospital
+### 1.  Design a Pipeline to Generate Heat Maps of Travel Time to Hospital
 The maps [here](https://medium.com/@sohanmurthy/visualizing-americas-health-care-deserts-675f4502c4e1) are a basic start for a visualization like this, but we can take this to the next level by using true travel times from Google Maps, correcting for population density, and tinkering with other parameters like traffic and public transit.
 
 ### 2. Understand the Factors Correllated with Time-to-Hospital
