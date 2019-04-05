@@ -1,4 +1,4 @@
-# Health Dessert Maps
+# Health Desert Maps
 
 **Authors:** Rachael C. "Rocky" Aikens, Benjamin Huynh, Elizabeth Chin, ksamuelg (full name?) and mgchavez(full name?)
 
