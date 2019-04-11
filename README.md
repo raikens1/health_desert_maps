@@ -19,6 +19,6 @@ The maps [here](https://medium.com/@sohanmurthy/visualizing-americas-health-care
  - **2a** We would like to understand how demographic and socioeconomic factors are associated with travel time to hospital, to better understand the populations affected by healthcare deserts.  
  - **2b** We would also like to understand the association between time-to-hospital and health outcomes.
 
-## 3. Predict the Effects of Hospital Closures and Openings
+### 3. Predict the Effects of Hospital Closures and Openings
 Using the pipeline from aim 1, we can model the potential effects of hospital openings and closures.  This can help us to model the short-term effects of the temporary closures which occur when hospitals reach capacity, or the long-term effects of closures of maternity care centers and Safety Net Hospitals.
 
