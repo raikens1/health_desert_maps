@@ -108,4 +108,4 @@ for i in range(len(start_locs)):
 input_df['duration'] = travel_times[:,0]
 input_df['duration_in_traffic'] = travel_times[:,1]
 
-input_df.read_csv(output_fi, sep = ',')
+input_df.to_csv(output_fi, sep = ',')
