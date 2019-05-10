@@ -8,7 +8,7 @@ A _healthcare dessert_ is a region where individuals have poor access to care.  
 
 ## Project Breakdown
 
-We can start with the following two aims, which will probably overlap in many places. 
+We will complete the following aims, which will probably overlap in many places. 
 
 _Each of these aims has an associated Project Board, where we can track goals and progress_
 
@@ -19,6 +19,6 @@ The maps [here](https://medium.com/@sohanmurthy/visualizing-americas-health-care
  - **2a** We would like to understand how demographic and socioeconomic factors are associated with travel time to hospital, to better understand the populations affected by healthcare deserts.  
  - **2b** We would also like to understand the association between time-to-hospital and health outcomes.
 
-### 3. Predict the Effects of Hospital Closures and Openings
-Using the pipeline from aim 1, we can model the potential effects of hospital openings and closures.  This can help us to model the short-term effects of the temporary closures which occur when hospitals reach capacity, or the long-term effects of closures of maternity care centers and Safety Net Hospitals.
+### 3. Predict the Effects of Hospital Closures
+Using the pipeline from aim 1, we can model the potential effects of hospital openings and closures.  This can help us to model the short-term effects of the temporary closures which occur when hospitals reach capacity, or the long-term effects of closures of specific care centers, such as Safety Net Hospitals.
 
