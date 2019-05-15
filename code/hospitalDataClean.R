@@ -57,11 +57,12 @@ nearest3DistanceDF <- distanceDFMerge %>%
   group_by(CensusTractGEOID) %>% 
   top_n(3, wt = -Distance) %>%
   arrange(CensusTractGEOID, Distance)%>%
-  ungroup()
+  ungroup() %>%
+  mutate(GEOID = CensusTractGEOID)
 
 # There's probably a zippy tidyr way to do this but here's what I did quick and dirty
 tidyNearest3DF <- nearest3DistanceDF %>%
-  group_by(CensusTractGEOID) %>%
+  group_by(GEOID) %>%
   summarise(OSHPDID_1 = nth(OSHPDID, 1),
             HospLat_1 = nth(HospLat, 1),
             HospLon_1 = nth(HospLon, 1),
@@ -76,4 +77,4 @@ tidyNearest3DF <- nearest3DistanceDF %>%
             Dist_3 = nth(Distance, 3)) %>%
   ungroup()
 
-#write.csv(tidyNearest3DF, file = "../data/GeoDistances.csv", row.names = FALSE)
+write.csv(tidyNearest3DF, file = "../data/GeoDistances.csv", row.names = FALSE)
