@@ -21,7 +21,8 @@ Output
 Input file format:
 location_file (csv)
 - each row should correspond to a query
-- start_id, start_longitude, start_latitude, end_id, end_longitude, end_latitude
+- start_id, start_longitude, start_latitude, end_id, end_longitude, end_latitude, end_dist
+- NOTE: you can have multiple end locations (just concatenate the columns)
 """
 
 """
@@ -73,12 +74,12 @@ required = ['input_fi','key']
 
 for r in required:
     if options.__dict__[r] is None:
-        parser.error("parameter %s required"%r)
+        parser.error("parameter %s required. Try python query_maps.py --help"%r)
         
-if parser.mode not in ['driving','walking','bicycling','transit']:
+if options.mode not in ['driving','walking','bicycling','transit']:
     parser.error("parameter travel_mode must be [driving|walking|bicycling|transit]")
     
-if parser.model not in ['best_guess','optimistic','pessimistic']:
+if options.model not in ['best_guess','optimistic','pessimistic']:
     parser.error("parameter traffic_odel must be [best_guess|optimistic|pessimistic]")
 
 if options.time == 'now':
@@ -86,26 +87,30 @@ if options.time == 'now':
 else:
     dept_time = datetime.strptime(options.time, '%b %d %Y %I:%M%p')
     
-input_df = pd.read_csv(input_fi, sep = ',')
+input_df = pd.read_csv(options.input_fi, sep = ',', dtype=str)
 
-start_locs = input_df[[1,2]].astype(str).apply(lambda x: ','.join(x), axis = 1).values
-dest_locs = input_df[[4,5]].astype(str).apply(lambda x: ','.join(x), axis = 1).values
+if ((input_df.shape[1] - 3) % 4) != 0:
+    print('ERROR: the number of columns in the locations file is incorrect. See usage for more details')
+    sys.exit(1)
+    
+gmaps = googlemaps.Client(key=options.key)
 
-travel_times = -np.ones((input_df.shape[0], 2))
+start_locs = input_df.iloc[:,[1,2]].apply(lambda x: ','.join(x), axis = 1).values
+dest_pos = np.array(list(range(int((input_df.shape[1] - 3) / 4)))) + 1
+dest_pos = np.array(list(zip(4*dest_pos, 4*dest_pos + 1)))
+travel_times_colnames = ['duration_' + str(j) for j in range(len(dest_pos))] + ['duration_in_traffic_' + str(j) for j in range(len(dest_pos))]
 
-for i in range(len(start_locs)):
-    distance_result = gmaps.distance_matrix(start_locs[i],
-                                     dest_locs[i],
-                                     mode=parser.mode,
-                                     avoid="ferries",
-                                     departure_time=dept_time,
-                                     traffic_model=parser.model
-                                    )
-    duration = distance_result['rows'][0]['elements'][0]['duration']['value']
-    duration_traffic = distance_result['rows'][0]['elements'][0]['duration_in_traffic']['value']
-    travel_times[i,] = [duration, duration_traffic]
-
-input_df['duration'] = travel_times[:,0]
-input_df['duration_in_traffic'] = travel_times[:,1]
-
-input_df.to_csv(output_fi, sep = ',')
+with open(options.output_fi, 'w') as f:
+    f.write(','.join(list(input_df) + travel_times_colnames) + '\n')
+    for i in range(len(start_locs)):
+        dest_locs = [','.join(input_df.iloc[i,p].values) for p in dest_pos]
+        distance_result = gmaps.distance_matrix(start_locs[i],
+                                         dest_locs,
+                                         mode=options.mode,
+                                         avoid="ferries",
+                                         departure_time=dept_time,
+                                         traffic_model=options.model
+                                        )
+        duration = [distance_result['rows'][0]['elements'][j]['duration']['value'] for j in range(len(dest_locs))]
+        duration_traffic = [distance_result['rows'][0]['elements'][j]['duration_in_traffic']['value'] for j in range(len(dest_locs))]
+        f.write(','.join(np.concatenate((input_df.iloc[i,],np.array(duration + duration_traffic).astype(str)))) + '\n')

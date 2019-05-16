@@ -62,7 +62,7 @@ nearest3DistanceDF <- distanceDFMerge %>%
 
 # There's probably a zippy tidyr way to do this but here's what I did quick and dirty
 tidyNearest3DF <- nearest3DistanceDF %>%
-  group_by(GEOID) %>%
+  group_by(GEOID, TractLat, TractLon) %>%
   summarise(OSHPDID_1 = nth(OSHPDID, 1),
             HospLat_1 = nth(HospLat, 1),
             HospLon_1 = nth(HospLon, 1),
