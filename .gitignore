@@ -1,0 +1,6 @@
+**/.RData
+**/*.Rout
+**/*.ipynb
+**/.ipynb_checkpoints
+**/.ipynb_checkpoints/*
+

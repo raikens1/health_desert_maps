@@ -17,41 +17,67 @@
 # Comment lines all must begin with #
 # The column headings will be included. This line should not start with a header
 
-library(sf) # dependency for tmap
+library(stringr)
+library(dplyr) 
+library(ggplot2) # tidyverse vis package
+library(readr)
+
+library(sf) # dependency for maps
 library(raster)
 library(spData)
-
-library(dplyr)
 library(tmap)    # for static and interactive maps
 library(leaflet) # for interactive maps
 library(mapview) # for interactive maps
-library(ggplot2) # tidyverse vis package
 library(shiny)   # for web applications
-library(stringr)
-library(tidycensus)
+library(tidycensus) # for census data queries
 
 census_api_key("6020dd87f4d614074553da9b317878cb026a7c88")
 
-CA_pop <- get_acs(geography = "tract", 
+# Load data on hospitals, distances, and cesus tract info
+hosp_df <- read_csv("../data/hospDataClean.csv")
+distance_df <- read_csv("../data/GeoDistances.csv")
+CA_census <- get_acs(geography = "tract", 
                      variables = "B01003_001", 
                      state = "CA",
-                     geometry = TRUE) 
+                     geometry = TRUE) %>%
+  mutate(GEOID = as.numeric(GEOID))
+CA_travel <- left_join(CA_census, distance_df, by = "GEOID")
 
-CA_pop
 
-pal <- colorQuantile(palette = "viridis", domain = CA_pop$estimate, n = 5)
+pal <- colorQuantile(palette = "viridis", domain = CA_travel$Dist_1, n = 10)
 
-CA_pop %>%
-  st_transform(crs = "+init=epsg:4326") %>%
-  leaflet(width = "100%") %>%
+
+CA_spatial <- CA_travel %>%
+  st_transform(crs = "+init=epsg:4326")
+
+
+getColor <- function(quakes) {
+  sapply(quakes$mag, function(mag) {
+    if(mag <= 4) {
+      "green"
+    } else if(mag <= 5) {
+      "orange"
+    } else {
+      "red"
+    } })
+}
+
+icons <- makeIcon(
+  iconUrl = "../data/marker.png",
+  iconWidth = 15,
+  iconHeight = 15
+)
+
+leaflet(data = CA_spatial, width = "100%") %>%
   addProviderTiles(provider = "CartoDB.Positron") %>%
+  addMarkers(data = hosp_df, ~LONGITUDE, ~LATITUDE, icon = icons, ~as.character(FAC_NAME), label = ~as.character(FAC_NAME)) %>%
   addPolygons(popup = ~ str_extract(NAME, "^([^,]*)"),
               stroke = FALSE,
               smoothFactor = 0,
               fillOpacity = 0.7,
-              color = ~ pal(estimate)) %>%
+              color = ~ pal(Dist_1)) %>%
   addLegend("bottomright", 
             pal = pal, 
-            values = ~ estimate,
-            title = "Population percentiles",
+            values = ~ Dist_1,
+            title = "Percentiles of Hospital Distance",
             opacity = 1)
