@@ -1,6 +1,6 @@
 # Health Desert Maps
 
-**Authors:** Rachael C. "Rocky" Aikens, Benjamin Huynh, Elizabeth Chin, ksamuelg (full name?) and mgchavez(full name?)
+**Authors:** Rachael C. "Rocky" Aikens, Michael Chavez, Elizabeth Chin, Benjamin Huynh, Karina Samuel-Gama
 
 ## Purpose
 
