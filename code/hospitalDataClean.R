@@ -1,21 +1,23 @@
 library(readr)
 library(dplyr)
 library(sf)
+library(here)
 
 
 # Read general Hospital data, clean it, and write it to a file
 #=====================================================
-hosp17_util_data_final <- read_csv("../data/hosp17_util_data_final.csv")
+hosp17_util_data_final <- read_csv(here("data","hosp17_util_data_final.csv"))
 hospClean <- hosp17_util_data_final %>%
   dplyr::select(FAC_NAME,FAC_ADDRESS_ONE,LATITUDE,LONGITUDE,COUNTY,TYPE_LIC,CENS_TRACT,FAC_CITY,TYPE_SVC_PRINCIPAL, OSHPD_ID)
 hospClean <- hospClean[-(c(1:3, 500)),]
+hospClean <- subset(hospClean,TYPE_LIC=="General Acute Care")
 
 #write.csv(hospClean, file = "../data/hospDataClean.csv", row.names = F)
 
 
 # Get Geometric Distances between hospitals and census tracts
 #=====================================================
-shape <- read_sf(dsn = "../data/tl_2017_06_tract", layer = "tl_2017_06_tract")
+shape <- read_sf(dsn = here("data","tl_2017_06_tract"), layer = "tl_2017_06_tract")
 
 #geoid is the unique identifier
 
@@ -77,4 +79,4 @@ tidyNearest3DF <- nearest3DistanceDF %>%
             Dist_3 = nth(Distance, 3)) %>%
   ungroup()
 
-write.csv(tidyNearest3DF, file = "../data/GeoDistances.csv", row.names = FALSE)
+write.csv(tidyNearest3DF, file = here("data","/GeoDistances.csv"), row.names = FALSE)
