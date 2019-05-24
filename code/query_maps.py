@@ -32,7 +32,7 @@ This file may have comment lines written above the data
 Comment lines all must begin with #
 The column headings will be included. This line should not start with a header
 """
-
+import os
 import googlemaps
 import optparse
 from datetime import datetime
@@ -95,13 +95,21 @@ if ((input_df.shape[1] - 3) % 4) != 0:
     
 gmaps = googlemaps.Client(key=options.key)
 
-start_locs = input_df.iloc[:,[1,2]].apply(lambda x: ','.join(x), axis = 1).values
 dest_pos = np.array(list(range(int((input_df.shape[1] - 3) / 4)))) + 1
 dest_pos = np.array(list(zip(4*dest_pos, 4*dest_pos + 1)))
 travel_times_colnames = ['duration_' + str(j) for j in range(len(dest_pos))] + ['duration_in_traffic_' + str(j) for j in range(len(dest_pos))]
 
-with open(options.output_fi, 'w') as f:
-    f.write(','.join(list(input_df) + travel_times_colnames) + '\n')
+if os.path.exists(options.output_fi) and os.path.getsize(options.output_fi) > 0:
+    output_df = pd.read_csv(options.output_fi, sep = ',', dtype=str)
+    df=pd.merge(input_df,output_df,on=[input_df.columns[0], output_df.columns[0]],how="left",indicator=True)
+    input_df = input_df[df['_merge'] == 'left_only']
+else:
+    with open(options.output_fi, 'w') as f:
+        f.write(','.join(list(input_df) + travel_times_colnames) + '\n')
+
+start_locs = input_df.iloc[:,[1,2]].apply(lambda x: ','.join(x), axis = 1).values
+
+with open(options.output_fi, 'a') as f:
     for i in range(len(start_locs)):
         dest_locs = [','.join(input_df.iloc[i,p].values) for p in dest_pos]
         distance_result = gmaps.distance_matrix(start_locs[i],
@@ -111,6 +119,15 @@ with open(options.output_fi, 'w') as f:
                                          departure_time=dept_time,
                                          traffic_model=options.model
                                         )
-        duration = [distance_result['rows'][0]['elements'][j]['duration']['value'] for j in range(len(dest_locs))]
-        duration_traffic = [distance_result['rows'][0]['elements'][j]['duration_in_traffic']['value'] for j in range(len(dest_locs))]
+        duration = [np.nan] * len(dest_locs)
+        duration_traffic = [np.nan] * len(dest_locs)
+        for j in range(len(dest_locs)):
+            try:
+                duration[j] = distance_result['rows'][0]['elements'][j]['duration']['value']
+            except:
+                pass
+            try:
+                duration_traffic[j] = distance_result['rows'][0]['elements'][j]['duration_in_traffic']['value']
+            except:
+                pass
         f.write(','.join(np.concatenate((input_df.iloc[i,],np.array(duration + duration_traffic).astype(str)))) + '\n')
