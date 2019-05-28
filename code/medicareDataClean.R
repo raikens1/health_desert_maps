@@ -6,6 +6,8 @@ hospClean <- dat %>% mutate("TYPE_LIC" = NA, "CENS_TRACT" = NA) %>%
 
 colnames(hospClean) <- c("FAC_NAME","FAC_ADDRESS_ONE","LATITUDE","LONGITUDE","COUNTY","TYPE_LIC","CENS_TRACT","FAC_CITY","TYPE_SVC_PRINCIPAL", "EMERGENCY_SERVICES", "OSHPD_ID")
 
+hospClean <- hospClean %>% filter(TYPE_SVC_PRINCIPAL != "Childrens")
+
 # Note: OSHPD_ID is not actually OSHPD_ID but federal ID of some sort
 
  write.csv(hospClean, file = "../data/MedicareDataClean.csv", row.names = F)

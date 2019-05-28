@@ -1,0 +1,64 @@
+---
+title: "Travel Heatmap Gallery"
+author: "Rachael Caelie (Rocky) Aikens"
+date: "5/24/2019"
+output: html_document
+---
+
+```{r setup, warning=FALSE, message = FALSE, include = FALSE}
+knitr::opts_chunk$set(cache=TRUE, warning = FALSE, message = FALSE, echo = FALSE, fig.align = "center", fig.height = 4)
+require(ggplot2)
+require(dplyr)
+require(gridExtra)
+require(ggpubr)
+theme_set(theme_light())
+source("build_heatmaps.R")
+```
+
+# Set Up
+
+First we need to get the census tract locations and demographics.  Census tracts have a unique GEOID, which we use to join data frames.
+
+```{r include=FALSE}
+census_api_key("6020dd87f4d614074553da9b317878cb026a7c88")
+
+CA_census <- get_acs(geography = "tract", 
+                     variables = "B01003_001", 
+                     state = "CA",
+                     geometry = TRUE) %>%
+  mutate(GEOID = as.numeric(GEOID))
+```
+
+One thing to note is that Rmarkdown and leaflet don't seem to play well together.
+
+# Geometric Distance
+
+The plots below show geometric distance to the nearest general acute care facility.
+
+```{r}
+# Load data on hospitals, distances, and cesus tract info
+GAC_df <- read_csv("../data/hospDataClean.csv") %>% filter(TYPE_LIC == "General Acute Care")
+GAC_geometric <- read_csv("../data/GeoDistances.csv")
+
+
+make_map(CA_census, GAC_geometric, GAC_df)
+```
+
+# Travel Time to Primary Care
+
+## Congested
+
+```{r}
+pcc_df <- read_csv("../data/pccDataClean.csv")
+pcc_congested <- read_csv("../data/mapTimes_primaryCare_congested.csv")
+```
+
+
+```{r}
+make_map(CA_census, pcc_congested, pcc_df)
+```
+
+
+
+## Not Congested
+
