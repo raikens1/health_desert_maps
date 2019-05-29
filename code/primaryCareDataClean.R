@@ -7,7 +7,9 @@ library(sf)
 #=====================================================
 hosp17_util_data_final <- read_csv("../data/pcc17_util_data_final.csv")
 hospClean <- hosp17_util_data_final %>%
-  filter(LIC_STATUS=='Open') %>%
+  filter(LIC_STATUS=='Open',PCC_HEALTH_SERV_MEDICAL == 'Yes',
+         !grepl("PLANNED PARENTHOOD", FAC_NAME), !grepl("SENIOR|ELDER|GERIATRIC", FAC_NAME),
+         !(grepl("KID|CHILD|PEDIATRIC|PREGNANCY|WOMEN|GYNECOLOGY", FAC_NAME) & !grepl("FAM", FAC_NAME))) %>%
   dplyr::select(FAC_NAME,FAC_ADDRESS_ONE,LATITUDE,LONGITUDE,COUNTY,CENS_TRACT,FAC_CITY,OSHPD_ID)
 hospClean <- hospClean[-(c(1:3, 500)),]
 
