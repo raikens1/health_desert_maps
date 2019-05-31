@@ -34,8 +34,8 @@ library(tidycensus) # for census data queries
 #census_api_key("6020dd87f4d614074553da9b317878cb026a7c88")
 
 # Load data on hospitals, distances, and cesus tract info
-hosp_df <- read_csv("../data/hospDataClean.csv")
-distance_df <- read_csv("../data/GeoDistances.csv")
+#hosp_df <- read_csv("../data/hospDataClean.csv")
+#distance_df <- read_csv("../data/GeoDistances.csv")
 #CA_census <- get_acs(geography = "tract", 
 #                     variables = "B01003_001", 
 #                     state = "CA",
@@ -47,6 +47,7 @@ distance_df <- read_csv("../data/GeoDistances.csv")
 #' @param travel_df data.frame - contains travel times from each tract to 3 nearest hospitals
 #' @param hosp_df data.frame - contains hospital locations and names
 #' @param icon_file string - location of file to load icons from
+#' 
 make_map <- function(CA_census, distance_df, hosp_df, icon_file = "../data/marker.png") {
   
   CA_travel <- left_join(CA_census, distance_df, by = "GEOID")
@@ -61,7 +62,7 @@ make_map <- function(CA_census, distance_df, hosp_df, icon_file = "../data/marke
     iconWidth = 15,
     iconHeight = 15
   )
-
+  
   leaflet(data = CA_spatial, width = "100%") %>%
     addProviderTiles(provider = "CartoDB.Positron") %>%
     addMarkers(data = hosp_df, ~LONGITUDE, ~LATITUDE, icon = icons, ~as.character(FAC_NAME), label = ~as.character(FAC_NAME)) %>%
@@ -75,7 +76,4 @@ make_map <- function(CA_census, distance_df, hosp_df, icon_file = "../data/marke
               values = ~ Dist_1,
               title = "Percentiles of Hospital Distance",
               opacity = 1)
-  }
-
-
-make_map(CA_census, distance_df, hosp_df)
+}
