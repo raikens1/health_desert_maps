@@ -51,7 +51,7 @@ icons <- makeIcon(
   iconHeight = 15
 )
 
-make_background <- function(CA_census, travel_df, hosp_df) {
+make_background <- function(CA_census, travel_df, hosp_df, title_text) {
 
   CA_travel <- left_join(CA_census, travel_df, by = "GEOID")
   
@@ -74,57 +74,65 @@ make_background <- function(CA_census, travel_df, hosp_df) {
       addLegend("bottomright", 
                 pal = pal, 
                 values = ~ min_duration,
-                title = "Minutes to Hospital",
+                title = title_text,
                 opacity = 1)
     }),
   "spatial" = CA_spatial,
   "palette" = pal))
 }
 
-ui <- fluidPage(leafletOutput("map"))
+ui <- fluidPage(leafletOutput("map"), downloadButton('downloadData', 'Download data'))
 
-server <- shinyServer(function(input, output) {
-  #create empty vector to hold all click ids
-  clicked <- reactiveValues(clickedMarker=NULL)
-  
-  hosp_df$FAC_NAME <- as.character(hosp_df$FAC_NAME)
-  
-  ## Make your initial map
-  travel_df <- travel_df %>% mutate(min_duration = pmin(duration_0, duration_1, duration_2, na.rm = TRUE))
-  a <- make_background(CA_census, travel_df, hosp_df)
-  output$map <- a$map
-  CA_spatial <- a$spatial
-  pal <- a$palette
-  
-  CA_spatial$min_duration_og <- CA_spatial$min_duration
-    
-  # observe the marker click info and print to console when it is changed.
-  observeEvent(input$map_marker_click,{
-    clicked$clickedMarker <- input$map_marker_click
-    OSHPD_ID <- hosp_df[hosp_df$FAC_NAME == clicked$clickedMarker$id,]$OSHPD_ID
-    for(i in 1:3){
-      CA_spatial[[paste0("duration_",i - 1)]][CA_spatial[[paste0("OSHPDID_",i)]] == OSHPD_ID] = Inf
-    }
-    filtered_df <- CA_spatial %>% filter((OSHPDID_1 == OSHPD_ID) | (OSHPDID_2 == OSHPD_ID) | (OSHPDID_3 == OSHPD_ID)) %>%
-      mutate(min_duration = min(duration_0, duration_1, duration_2))
+build_heatmap <- function(CA_census, travel_df, hosp_df, title_text, output_fi){
+  shinyApp(ui, 
+           server = shinyServer(function(input, output) {
+             #create empty vector to hold all click ids
+             clicked <- reactiveValues(clickedMarker=NULL)
+             
+             hosp_df$FAC_NAME <- as.character(hosp_df$FAC_NAME)
+             
+             ## Make your initial map
+             travel_df <- travel_df %>% mutate(min_duration = pmin(duration_0, duration_1, duration_2, na.rm = TRUE))
+             a <- make_background(CA_census, travel_df, hosp_df, title_text)
+             output$map <- a$map
+             CA_spatial <- a$spatial
+             pal <- a$palette
+             
+             CA_spatial$min_duration_og <- CA_spatial$min_duration
+             
+             # observe the marker click info and print to console when it is changed.
+             observeEvent(input$map_marker_click,{
+               clicked$clickedMarker <- input$map_marker_click
+               OSHPD_ID <- hosp_df[hosp_df$FAC_NAME == clicked$clickedMarker$id,]$OSHPD_ID
+               for(i in 1:3){
+                 CA_spatial[[paste0("duration_",i - 1)]][CA_spatial[[paste0("OSHPDID_",i)]] == OSHPD_ID] = Inf
+               }
+               filtered_df <- CA_spatial %>% filter((OSHPDID_1 == OSHPD_ID) | (OSHPDID_2 == OSHPD_ID) | (OSHPDID_3 == OSHPD_ID)) %>%
+                 mutate(min_duration = min(duration_0, duration_1, duration_2))
+               
+               leafletProxy("map") %>% removeMarker(layerId = clicked$clickedMarker$id)
+               if(nrow(filtered_df) > 0) {
+                 leafletProxy("map", data = filtered_df) %>%
+                   addPolygons(label = ~GEOID,
+                               stroke = FALSE,
+                               smoothFactor = 0,
+                               fillOpacity = 0.7,
+                               color = ~ pal(min_duration))
+               }
+               
+               #print(clicked$clickedMarker)
+               clicked$clickedMarker <- NULL
+             }
+             )
+             
+             ##########################################################
+             output$downloadData <- downloadHandler(
+               filename = output_fi,
+               content = function(file) {
+                 CA_spatial <- CA_spatial %>% mutate(min_duration = pmin(duration_0, duration_1, duration_2, na.rm = TRUE))
+                 write_csv(CA_spatial,file)
+               })
 
-    leafletProxy("map") %>% removeMarker(layerId = clicked$clickedMarker$id)
-    leafletProxy("map", data = filtered_df) %>%
-      addPolygons(label = ~GEOID,
-                  stroke = FALSE,
-                  smoothFactor = 0,
-                  fillOpacity = 0.7,
-                  color = ~ pal(min_duration))
-
-    #print(clicked$clickedMarker)
-    clicked$clickedMarker <- NULL
-  }
-  )
-  
-  ##########################################################
-  CA_spatial <- CA_spatial %>% mutate(min_duration = pmin(duration_0, duration_1, duration_2, na.rm = TRUE))
-})
-
-build_heatmap <- function(){
-  shinyApp(ui, server)
+           })
+      )
 }
