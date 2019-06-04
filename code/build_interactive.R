@@ -97,14 +97,12 @@ build_heatmap <- function(CA_census, travel_df, hosp_df, title_text, output_fi, 
              travel_df <- travel_df %>% mutate(duration_0 = pmin(duration_0,max_minutes*60), 
                                                duration_1 = pmin(duration_1,max_minutes*60), 
                                                duration_2 = pmin(duration_2,max_minutes*60)) %>%
-               mutate(min_duration = pmin(duration_0, duration_1, duration_2, na.rm = TRUE)/60)
+               mutate(min_duration = pmin(duration_0, duration_1, duration_2, na.rm = TRUE)/60, min_duration_og = min_duration)
              a <- make_background(CA_census, travel_df, hosp_df, title_text, n_bins)
              output$map <- a$map
              CA_spatial <- a$spatial
              rownames(CA_spatial) <- CA_spatial$GEOID
              pal <- a$palette
-             
-             CA_spatial$min_duration_og <- CA_spatial$min_duration
              
              # observe the marker click info and print to console when it is changed.
              observeEvent(input$map_marker_click,{
@@ -119,10 +117,12 @@ build_heatmap <- function(CA_census, travel_df, hosp_df, title_text, output_fi, 
                
                filtered_df <- CA_spatial %>% filter((OSHPDID_1 == OSHPD_ID) | (OSHPDID_2 == OSHPD_ID) | (OSHPDID_3 == OSHPD_ID))
                
-               leafletProxy("map") %>% removeMarker(layerId = clicked$clickedMarker$id)
+               proxy <- leafletProxy("map")
+               
+               proxy %>% removeMarker(layerId = clicked$clickedMarker$id)
                if(nrow(filtered_df) > 0) {
-                 leafletProxy("map", data = filtered_df) %>%
-                   addPolygons(label = ~ GEOID,
+                 proxy %>% addPolygons(data = filtered_df,
+                               label = ~ GEOID,
                                stroke = FALSE,
                                smoothFactor = 0,
                                fillOpacity = 1,
