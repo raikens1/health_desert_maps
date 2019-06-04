@@ -79,7 +79,14 @@ make_background <- function(CA_census, travel_df, hosp_df, title_text, n_bins) {
                 pal = pal, 
                 values = ~ min_duration,
                 title = title_text,
-                opacity = 1)
+                opacity = 1,
+                labFormat =  function(type, cuts, p) {
+                  n <- length(cuts)
+                  cut_str <- rep("", n-1)
+                  for(i in 1:(n-2)){ cut_str[i] <- paste0(cuts[i],'-',cuts[i+1])}
+                  cut_str[n-1] <- paste0(cuts[n-1],"+")
+                  paste0(cut_str)}
+      )
   }),
   "spatial" = CA_spatial,
   "palette" = pal))
@@ -87,7 +94,7 @@ make_background <- function(CA_census, travel_df, hosp_df, title_text, n_bins) {
 
 ui <- fluidPage(leafletOutput("map"), downloadButton('downloadData', 'Download data'))
 
-build_heatmap <- function(CA_census, travel_df, hosp_df, title_text, output_fi, max_minutes = 60, n_bins = 6){
+build_heatmap <- function(CA_census, travel_df, hosp_df, title_text, output_fi, max_minutes = 61, n_bins = 7){
   shinyApp(ui, 
            server = shinyServer(function(input, output) {
              hosp_df$FAC_NAME <- as.character(hosp_df$FAC_NAME)
