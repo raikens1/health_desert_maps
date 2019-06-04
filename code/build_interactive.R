@@ -51,11 +51,13 @@ icons <- makeIcon(
   iconHeight = 15
 )
 
-make_background <- function(CA_census, travel_df, hosp_df, title_text) {
+make_background <- function(CA_census, travel_df, hosp_df, title_text, n_bins) {
 
   CA_travel <- left_join(CA_census, travel_df, by = "GEOID")
   
-  pal <- colorQuantile(palette = "viridis", domain = CA_travel$min_duration, n = 10)
+  all_durations <- c(CA_travel$duration_0, CA_travel$duration_1, CA_travel$duration_2, na.rm = TRUE) / 60
+  
+  pal <- colorBin(palette = "viridis", domain = all_durations, bins = n_bins)
   
   CA_spatial <- CA_travel %>%
     st_transform(crs = "+init=epsg:4326")
@@ -68,7 +70,7 @@ make_background <- function(CA_census, travel_df, hosp_df, title_text) {
       addPolygons(popup = ~ str_extract(NAME, "^([^,]*)"),
                   stroke = FALSE,
                   smoothFactor = 0,
-                  fillOpacity = 0.7,
+                  fillOpacity = 1,
                   label = ~ GEOID,
                   color = ~ pal(min_duration)) %>%
       addLegend("bottomright", 
@@ -83,7 +85,7 @@ make_background <- function(CA_census, travel_df, hosp_df, title_text) {
 
 ui <- fluidPage(leafletOutput("map"), downloadButton('downloadData', 'Download data'))
 
-build_heatmap <- function(CA_census, travel_df, hosp_df, title_text, output_fi){
+build_heatmap <- function(CA_census, travel_df, hosp_df, title_text, output_fi, max_minutes = 60, n_bins = 6){
   shinyApp(ui, 
            server = shinyServer(function(input, output) {
              #create empty vector to hold all click ids
@@ -92,10 +94,14 @@ build_heatmap <- function(CA_census, travel_df, hosp_df, title_text, output_fi){
              hosp_df$FAC_NAME <- as.character(hosp_df$FAC_NAME)
              
              ## Make your initial map
-             travel_df <- travel_df %>% mutate(min_duration = pmin(duration_0, duration_1, duration_2, na.rm = TRUE))
-             a <- make_background(CA_census, travel_df, hosp_df, title_text)
+             travel_df <- travel_df %>% mutate(duration_0 = pmin(duration_0,max_minutes*60), 
+                                               duration_1 = pmin(duration_1,max_minutes*60), 
+                                               duration_2 = pmin(duration_2,max_minutes*60)) %>%
+               mutate(min_duration = pmin(duration_0, duration_1, duration_2, na.rm = TRUE)/60)
+             a <- make_background(CA_census, travel_df, hosp_df, title_text, n_bins)
              output$map <- a$map
              CA_spatial <- a$spatial
+             rownames(CA_spatial) <- CA_spatial$GEOID
              pal <- a$palette
              
              CA_spatial$min_duration_og <- CA_spatial$min_duration
@@ -104,19 +110,22 @@ build_heatmap <- function(CA_census, travel_df, hosp_df, title_text, output_fi){
              observeEvent(input$map_marker_click,{
                clicked$clickedMarker <- input$map_marker_click
                OSHPD_ID <- hosp_df[hosp_df$FAC_NAME == clicked$clickedMarker$id,]$OSHPD_ID
-               for(i in 1:3){
-                 CA_spatial[[paste0("duration_",i - 1)]][CA_spatial[[paste0("OSHPDID_",i)]] == OSHPD_ID] = Inf
-               }
-               filtered_df <- CA_spatial %>% filter((OSHPDID_1 == OSHPD_ID) | (OSHPDID_2 == OSHPD_ID) | (OSHPDID_3 == OSHPD_ID)) %>%
-                 mutate(min_duration = min(duration_0, duration_1, duration_2))
+               
+               CA_spatial$duration_0[CA_spatial$OSHPDID_1 == OSHPD_ID] <- NA
+               CA_spatial$duration_1[CA_spatial$OSHPDID_2 == OSHPD_ID] <- NA
+               CA_spatial$duration_2[CA_spatial$OSHPDID_3 == OSHPD_ID] <- NA
+               
+               CA_spatial <- CA_spatial %>% mutate(min_duration = pmin(duration_0, duration_1, duration_2, na.rm=TRUE)/60)
+               
+               filtered_df <- CA_spatial %>% filter((OSHPDID_1 == OSHPD_ID) | (OSHPDID_2 == OSHPD_ID) | (OSHPDID_3 == OSHPD_ID))
                
                leafletProxy("map") %>% removeMarker(layerId = clicked$clickedMarker$id)
                if(nrow(filtered_df) > 0) {
                  leafletProxy("map", data = filtered_df) %>%
-                   addPolygons(label = ~GEOID,
+                   addPolygons(label = ~ GEOID,
                                stroke = FALSE,
                                smoothFactor = 0,
-                               fillOpacity = 0.7,
+                               fillOpacity = 1,
                                color = ~ pal(min_duration))
                }
                
@@ -129,7 +138,6 @@ build_heatmap <- function(CA_census, travel_df, hosp_df, title_text, output_fi){
              output$downloadData <- downloadHandler(
                filename = output_fi,
                content = function(file) {
-                 CA_spatial <- CA_spatial %>% mutate(min_duration = pmin(duration_0, duration_1, duration_2, na.rm = TRUE))
                  write_csv(CA_spatial,file)
                })
 

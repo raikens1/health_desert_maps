@@ -47,6 +47,6 @@ make_map(CA_census, distance_df, hosp_df)
 ```{r}
 travel_df <- read_csv("../data/map_times_hosptials_noncongested.csv")
 
-build_heatmap(CA_census, travel_df, hosp_df, "Percentiles of Hospital Travel Time", "travel_change_hospital_noncongested.csv")
+build_heatmap(CA_census, travel_df, hosp_df, "Hospital travel time in minutes", "travel_change_hospital_noncongested.csv")
 ```
 
