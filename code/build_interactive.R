@@ -52,7 +52,7 @@ icons <- makeIcon(
 )
 
 make_background <- function(CA_census, travel_df, hosp_df, title_text, n_bins) {
-
+  
   CA_travel <- left_join(CA_census, travel_df, by = "GEOID")
   
   all_durations <- c(CA_travel$duration_0, CA_travel$duration_1, CA_travel$duration_2, na.rm = TRUE) / 60
@@ -61,6 +61,8 @@ make_background <- function(CA_census, travel_df, hosp_df, title_text, n_bins) {
   
   CA_spatial <- CA_travel %>%
     st_transform(crs = "+init=epsg:4326")
+  
+  rownames(CA_spatial) <- CA_spatial$GEOID
   
   return(list("map" = renderLeaflet({
     leaflet(data = CA_spatial, width = "100%") %>%
@@ -78,7 +80,7 @@ make_background <- function(CA_census, travel_df, hosp_df, title_text, n_bins) {
                 values = ~ min_duration,
                 title = title_text,
                 opacity = 1)
-    }),
+  }),
   "spatial" = CA_spatial,
   "palette" = pal))
 }
@@ -88,9 +90,6 @@ ui <- fluidPage(leafletOutput("map"), downloadButton('downloadData', 'Download d
 build_heatmap <- function(CA_census, travel_df, hosp_df, title_text, output_fi, max_minutes = 60, n_bins = 6){
   shinyApp(ui, 
            server = shinyServer(function(input, output) {
-             #create empty vector to hold all click ids
-             clicked <- reactiveValues(clickedMarker=NULL)
-             
              hosp_df$FAC_NAME <- as.character(hosp_df$FAC_NAME)
              
              ## Make your initial map
@@ -100,14 +99,17 @@ build_heatmap <- function(CA_census, travel_df, hosp_df, title_text, output_fi, 
                mutate(min_duration = pmin(duration_0, duration_1, duration_2, na.rm = TRUE)/60, min_duration_og = min_duration)
              a <- make_background(CA_census, travel_df, hosp_df, title_text, n_bins)
              output$map <- a$map
-             CA_spatial <- a$spatial
-             rownames(CA_spatial) <- CA_spatial$GEOID
+             #create empty vector to hold all click ids
+             clicked <- reactiveValues(clickedMarker=NULL, df = a$spatial)
              pal <- a$palette
              
              # observe the marker click info and print to console when it is changed.
              observeEvent(input$map_marker_click,{
+               CA_spatial <- clicked$df
                clicked$clickedMarker <- input$map_marker_click
                OSHPD_ID <- hosp_df[hosp_df$FAC_NAME == clicked$clickedMarker$id,]$OSHPD_ID
+               
+               filtered_df <- CA_spatial %>% filter((OSHPDID_1 == OSHPD_ID) | (OSHPDID_2 == OSHPD_ID) | (OSHPDID_3 == OSHPD_ID))
                
                CA_spatial$duration_0[CA_spatial$OSHPDID_1 == OSHPD_ID] <- NA
                CA_spatial$duration_1[CA_spatial$OSHPDID_2 == OSHPD_ID] <- NA
@@ -122,15 +124,17 @@ build_heatmap <- function(CA_census, travel_df, hosp_df, title_text, output_fi, 
                proxy %>% removeMarker(layerId = clicked$clickedMarker$id)
                if(nrow(filtered_df) > 0) {
                  proxy %>% addPolygons(data = filtered_df,
-                               label = ~ GEOID,
-                               stroke = FALSE,
-                               smoothFactor = 0,
-                               fillOpacity = 1,
-                               color = ~ pal(min_duration))
+                                       popup = ~ str_extract(NAME, "^([^,]*)"),
+                                       stroke = FALSE,
+                                       smoothFactor = 0,
+                                       fillOpacity = 1,
+                                       label = ~ GEOID,
+                                       color = ~ pal(min_duration))
                }
                
                #print(clicked$clickedMarker)
                clicked$clickedMarker <- NULL
+               clicked$df <- CA_spatial
              }
              )
              
@@ -138,9 +142,9 @@ build_heatmap <- function(CA_census, travel_df, hosp_df, title_text, output_fi, 
              output$downloadData <- downloadHandler(
                filename = output_fi,
                content = function(file) {
-                 write_csv(CA_spatial,file)
+                 write_csv(clicked$df,file)
                })
-
+             
            })
-      )
+  )
 }
