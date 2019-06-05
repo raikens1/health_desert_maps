@@ -1,0 +1,217 @@
+---
+title: "Aim1"
+author: "Rachael Caelie (Rocky) Aikens"
+date: "6/3/2019"
+output: html_document
+---
+
+```{r setup, warning=FALSE, message = FALSE, include = FALSE}
+knitr::opts_chunk$set(cache=FALSE, warning = FALSE, message = FALSE, echo = FALSE, fig.align = "center", fig.height = 4)
+require(ggplot2)
+require(dplyr)
+require(gridExtra)
+require(ggpubr)
+require(here)
+theme_set(theme_light())
+```
+
+
+```{r}
+GAC_travel <- read_csv(here("data", "map_times_hosptials_noncongested.csv")) %>% 
+  rowwise() %>%
+  mutate(min_secs = min(duration_in_traffic_0, duration_in_traffic_1, duration_in_traffic_2)) %>%
+  mutate(min_minutes = min_secs/60) %>% 
+  mutate(min_hosp = list(which(c(duration_in_traffic_0, duration_in_traffic_1, duration_in_traffic_2) == min_secs)),
+         nearest_hosp = list(which(c(Dist_1, Dist_2, Dist_3) == Dist_1))) %>%
+  mutate(hosp_type = "General Acute Care")
+```
+
+```{r}
+pcc_travel <- read_csv(here("data", "mapTimes_primaryCare_noncongested.csv")) %>% 
+  rowwise() %>%
+  mutate(min_secs = min(duration_in_traffic_0, duration_in_traffic_1, duration_in_traffic_2)) %>%
+  mutate(min_minutes = min_secs/60) %>% 
+  mutate(min_hosp = list(which(c(duration_in_traffic_0, duration_in_traffic_1, duration_in_traffic_2) == min_secs)),
+         nearest_hosp = list(which(c(Dist_1, Dist_2, Dist_3) == Dist_1))) %>%
+  mutate(hosp_type = "Primary Care")
+```
+
+```{r}
+Medicaid_travel <- read_csv(here("data", "map_times_medicare_noncongested.csv")) %>% 
+  rowwise() %>%
+  mutate(min_secs = min(duration_in_traffic_0, duration_in_traffic_1, duration_in_traffic_2)) %>%
+  mutate(min_minutes = min_secs/60) %>% 
+  mutate(min_hosp = list(which(c(duration_in_traffic_0, duration_in_traffic_1, duration_in_traffic_2) == min_secs)),
+         nearest_hosp = list(which(c(Dist_1, Dist_2, Dist_3) == Dist_1))) %>%
+  mutate(hosp_type = "Medicaid")
+```
+
+```{r}
+Safetynet_travel <- read_csv(here("data", "map_times_safetynet_noncongested.csv")) %>% 
+  rowwise() %>%
+  mutate(min_secs = min(duration_in_traffic_0, duration_in_traffic_1, duration_in_traffic_2)) %>%
+  mutate(min_minutes = min_secs/60) %>% 
+  mutate(min_hosp = list(which(c(duration_in_traffic_0, duration_in_traffic_1, duration_in_traffic_2) == min_secs)),
+         nearest_hosp = list(which(c(Dist_1, Dist_2, Dist_3) == Dist_1))) %>%
+  mutate(hosp_type = "Safetynet")
+```
+
+```{r}
+GAC_traffic <- read_csv(here("data", "map_times_hosptials_congested.csv")) %>% 
+  rowwise() %>%
+  mutate(min_secs = min(duration_in_traffic_0, duration_in_traffic_1, duration_in_traffic_2)) %>%
+  mutate(min_minutes = min_secs/60) %>% 
+  mutate(min_hosp = list(which(c(duration_in_traffic_0, duration_in_traffic_1, duration_in_traffic_2) == min_secs)),
+         nearest_hosp = list(which(c(Dist_1, Dist_2, Dist_3) == Dist_1))) %>%
+  mutate(hosp_type = "General Acute Care")
+```
+
+```{r}
+pcc_traffic <- read_csv(here("data", "map_times_primaryCare_congested.csv")) %>% 
+  rowwise() %>%
+  mutate(min_secs = min(duration_in_traffic_0, duration_in_traffic_1, duration_in_traffic_2)) %>%
+  mutate(min_minutes = min_secs/60) %>% 
+  mutate(min_hosp = list(which(c(duration_in_traffic_0, duration_in_traffic_1, duration_in_traffic_2) == min_secs)),
+         nearest_hosp = list(which(c(Dist_1, Dist_2, Dist_3) == Dist_1))) %>%
+  mutate(hosp_type = "Primary Care")
+```
+
+```{r}
+Medicaid_traffic <- read_csv(here("data", "map_times_medicare_congested.csv")) %>% 
+  rowwise() %>%
+  mutate(min_secs = min(duration_in_traffic_0, duration_in_traffic_1, duration_in_traffic_2)) %>%
+  mutate(min_minutes = min_secs/60) %>% 
+  mutate(min_hosp = list(which(c(duration_in_traffic_0, duration_in_traffic_1, duration_in_traffic_2) == min_secs)),
+         nearest_hosp = list(which(c(Dist_1, Dist_2, Dist_3) == Dist_1))) %>%
+  mutate(hosp_type = "Medicaid")
+```
+
+```{r}
+Safetynet_traffic <- read_csv(here("data", "map_times_safetynet_congested.csv")) %>% 
+  rowwise() %>%
+  mutate(min_secs = min(duration_in_traffic_0, duration_in_traffic_1, duration_in_traffic_2)) %>%
+  mutate(min_minutes = min_secs/60) %>% 
+  mutate(min_hosp = list(which(c(duration_in_traffic_0, duration_in_traffic_1, duration_in_traffic_2) == min_secs)),
+         nearest_hosp = list(which(c(Dist_1, Dist_2, Dist_3) == Dist_1))) %>%
+  mutate(hosp_type = "Safetynet")
+```
+
+```{r}
+check_mismatch <- function(df1, df2){
+  mismatch = 0
+  n_NA = 0
+  for (i in 1:8057) {
+      if(length(df1$min_hosp[i][[1]])==0 | length(df2$min_hosp[i][[1]])==0){
+        n_NA = n_NA + 1
+      } else{
+            if (length(intersect(df1$min_hosp[i][[1]], df2$min_hosp[i][[1]])) == 0){
+            mismatch = mismatch + 1
+            }
+      }
+    }
+  return(mismatch/(8057-n_NA))
+}
+```
+
+```{r}
+check_mismatch_geodist <- function(df){
+  mismatch = 0
+  n_NA = 0
+  for (i in 1:8057) {
+      if(length(df$min_hosp[i][[1]])==0 | length(df$nearest_hosp[i][[1]])==0){
+        n_NA = n_NA + 1
+      } else{
+            if (length(intersect(df$min_hosp[i][[1]], df$nearest_hosp[i][[1]])) == 0){
+            mismatch = mismatch + 1
+            }
+      }
+    }
+  return(mismatch/(8057-n_NA))
+}
+```
+
+
+```{r}
+# check how often the nearest hospital (geometrically) is the quickest hospital
+check_mismatch_geodist(GAC_travel)
+check_mismatch_geodist(pcc_travel)
+check_mismatch_geodist(Medicaid_travel)
+check_mismatch_geodist(Safetynet_travel)
+
+# check how often the nearest hospital (geometrically) is the quickest hospital in traffic
+check_mismatch_geodist(GAC_traffic)
+check_mismatch_geodist(pcc_traffic)
+check_mismatch_geodist(Medicaid_traffic)
+check_mismatch_geodist(Safetynet_traffic)
+
+# check how often the quickest hospital in traffic is the quickest hospital without traffic
+check_mismatch(GAC_traffic, GAC_travel)
+check_mismatch(pcc_traffic, pcc_travel)
+check_mismatch(Medicaid_traffic, Medicaid_travel)
+check_mismatch(Safetynet_traffic, Safetynet_travel)
+```
+
+```{r}
+#note, should really check whether there are two mins, but how often does that really happen
+plt_data <- data.frame(percent_incorrect = c(check_mismatch_geodist(GAC_travel),
+check_mismatch_geodist(pcc_travel),
+check_mismatch_geodist(Medicaid_travel),
+check_mismatch_geodist(Safetynet_travel),
+check_mismatch_geodist(GAC_traffic),
+check_mismatch_geodist(pcc_traffic),
+check_mismatch_geodist(Medicaid_traffic),
+check_mismatch_geodist(Safetynet_traffic)),
+                       
+traffic = rep(c("No Traffic", "Traffic"), each = 4),
+hospital_type = rep(c("General", "Primary Care", "Medicaid", "Safetynet"), 2))%>%
+  mutate(hospital_type = factor(hospital_type, levels = c("Primary Care", "General", "Medicaid", "Safetynet")))
+
+ggplot(data = plt_data, aes(x = hospital_type, y = percent_incorrect, group = as.factor(traffic), fill = as.factor(traffic))) + geom_col(aes(stat = "identity"), position = "dodge", width= 0.5) +scale_fill_manual(values = c("dodgerblue2", "firebrick2")) + theme(legend.title = element_blank()) + xlab("Hospital Type") + ylab("Percent Mismatch") + ylim(c(0,1))
+```
+
+```{r}
+#note, should really check whether there are two mins, but how often does that really happen
+plt_data <- data.frame(percent_mismatch = c(check_mismatch(GAC_traffic, GAC_travel),
+check_mismatch(pcc_traffic, pcc_travel),
+check_mismatch(Medicaid_traffic, Medicaid_travel),
+check_mismatch(Safetynet_traffic, Safetynet_travel)),
+hospital_type = rep(c("General", "Primary Care", "Medicaid", "Safetynet"), 1))%>%
+  mutate(hospital_type = factor(hospital_type, levels = c("Primary Care", "General", "Medicaid", "Safetynet")))
+
+ggplot(data = plt_data, aes(x = hospital_type, y = percent_mismatch)) + geom_col(aes(stat = "identity"), position = "dodge", width= 0.5, fill = "forestgreen") + theme(legend.title = element_blank()) + xlab("Hospital Type") + ylab("Percent Mismatch") + ylim(c(0,1))
+```
+
+```{r}
+all_traffic <- rbind(GAC_traffic, pcc_traffic, Medicaid_traffic, Safetynet_traffic) %>% mutate(traffic = "Traffic") %>%
+  mutate(hosp_type = factor(hosp_type, levels = c("Primary Care", "General Acute Care", "Medicaid", "Safetynet")))
+all_nontraffic <- rbind(GAC_travel, pcc_travel, Medicaid_travel, Safetynet_travel) %>% mutate(traffic = "No Traffic")%>%
+  mutate(hosp_type = factor(hosp_type, levels = c("Primary Care", "General Acute Care", "Medicaid", "Safetynet")))
+all_hospitals <- rbind(all_traffic, all_nontraffic)
+```
+
+```{r}
+all_nontraffic %>% group_by(hosp_type) %>% summarize(mean_time = mean(min_minutes))
+```
+
+
+```{r}
+ggplot(data = all_traffic, aes(x = hosp_type, y = min_minutes, fill = hosp_type)) + geom_boxplot() + scale_y_continuous(trans='log10') + scale_fill_brewer(palette = "Set1") + theme(legend.position = "None") + xlab("Hospital Type") + ylab("Travel Time in Minutes \n(log scale)")
+```
+
+```{r}
+ggplot(data = all_nontraffic, aes(x = hosp_type, y = min_minutes, fill = hosp_type)) + geom_boxplot() + scale_y_continuous(trans='log10') + scale_fill_brewer(palette = "Set1") + theme(legend.position = "None") + xlab("Hospital Type") + ylab("Travel Time in Minutes \n(log scale)")
+```
+
+
+```{r}
+ggplot(data = Medicaid_travel, aes(x = Dist_1*69, y = min_minutes)) + geom_point() + xlab("Geometric Distance\n(miles)") + ylab("Travel Time\n(minutes)") + geom_abline(slope = 1, color = "red")
+
+ggplot(data = Medicaid_travel, aes(x = Dist_1*69, y = min_minutes)) + geom_point() + xlab("Geometric Distance\n(miles)") + ylab("Travel Time\n(minutes)") + scale_x_continuous(trans = "log10") + scale_y_continuous(trans = "log10")
+
+cor(Medicaid_traffic$Dist_1, Medicaid_traffic$min_minutes)
+```
+
+```{r}
+for i in 1:dim(GAC_travel)
+```
+
