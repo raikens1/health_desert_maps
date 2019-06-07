@@ -6,21 +6,21 @@
 
 The `code` directory contains all of the scripts that were used to generate the data, figures, and vizualization tool for this project.  Attributions are as follows:
 
-Aim1_analyses.Rmd - RA
-Aim2Outcome.R - MC
-Aim2_Curate.R - MC
-Aim2_Socioecon.R - MC
-Heatmap_gallery.Rmd - RA and EC
-build_heatmaps.R - RA
-build_interactive.R - EC
-ca_medicaid_hospital_information_clean.R - KSG
-economic_characteristics.R - KSG
-general_demographics.R - KSG
-medicareDataClean.R - BH
-hospitalDataClean.R - BH
-primaryCareDataClean.R - BH
-query_maps.py - LC
-safetynetDataClean - BH
+- Aim1_analyses.Rmd - RA
+- Aim2Outcome.R - MC
+- Aim2_Curate.R - MC
+- Aim2_Socioecon.R - MC
+- Heatmap_gallery.Rmd - RA and EC
+- build_heatmaps.R - RA
+- build_interactive.R - EC
+- ca_medicaid_hospital_information_clean.R - KSG
+- economic_characteristics.R - KSG
+- general_demographics.R - KSG
+- medicareDataClean.R - BH
+- hospitalDataClean.R - BH
+- primaryCareDataClean.R - BH
+- query_maps.py - LC
+- safetynetDataClean - BH
 
 Broadly, RA wrote on the code for producing basic heatmaps and produced the Aim 1 results; MC completed Aim 2 and also prepared outcome data; EC built the interactive heatmaps and wrote the script to query gooogle maps; BH prepared the hospital and census tract geolocation data; and KSG prepared demographic and socioeconomic data for Aim 2 and cleaned the medicare hospitals data.
 
