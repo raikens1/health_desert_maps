@@ -19,7 +19,7 @@ The `code` directory contains all of the scripts that were used to generate the 
 - medicareDataClean.R - BH 
 - hospitalDataClean.R - BH
 - primaryCareDataClean.R - BH
-- query_maps.py - LC
+- query_maps.py - EC
 - safetynetDataClean - BH
 
 Broadly, RA wrote on the code for producing basic heatmaps and produced the Aim 1 results; MC completed Aim 2 and also prepared outcome data; EC built the interactive heatmaps and wrote the script to query gooogle maps; BH prepared the hospital and census tract geolocation data; and KSG prepared demographic and socioeconomic data for Aim 2 and cleaned the medicaid hospitals data.
