@@ -16,13 +16,13 @@ The `code` directory contains all of the scripts that were used to generate the 
 - ca_medicaid_hospital_information_clean.R - KSG
 - economic_characteristics.R - KSG
 - general_demographics.R - KSG
-- medicareDataClean.R - BH
+- medicareDataClean.R - BH 
 - hospitalDataClean.R - BH
 - primaryCareDataClean.R - BH
 - query_maps.py - LC
 - safetynetDataClean - BH
 
-Broadly, RA wrote on the code for producing basic heatmaps and produced the Aim 1 results; MC completed Aim 2 and also prepared outcome data; EC built the interactive heatmaps and wrote the script to query gooogle maps; BH prepared the hospital and census tract geolocation data; and KSG prepared demographic and socioeconomic data for Aim 2 and cleaned the medicare hospitals data.
+Broadly, RA wrote on the code for producing basic heatmaps and produced the Aim 1 results; MC completed Aim 2 and also prepared outcome data; EC built the interactive heatmaps and wrote the script to query gooogle maps; BH prepared the hospital and census tract geolocation data; and KSG prepared demographic and socioeconomic data for Aim 2 and cleaned the medicaid hospitals data.
 
 Querying Google Maps was the joint effort of all team members.  All group members were full contibutors and their work was essential to making this project a success.  We would also like to give a special thanks to the friends and family who contributed their Google Cloud Project credits to make this project possible.
 
