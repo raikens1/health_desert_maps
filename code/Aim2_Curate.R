@@ -1,3 +1,7 @@
+######################
+##  Michael Chavez  ##
+######################
+
 ## My harddrive (Harddrive = Qi Lab scSeq+CyTOF Drive)
 setwd("E:/BMI_212/")
 library(reshape2)
@@ -11,7 +15,8 @@ Primary_con  <- read.csv("map_times_primaryCare_congested.csv")
 Primary_non  <- read.csv("mapTimes_primaryCare_noncongested.csv")
 Medicare_con <- read.csv("map_times_medicare_congested.csv")
 Medicare_non <- read.csv("map_times_medicare_noncongested.csv")
-
+Safetynet_con <- read.csv("safetynetTimesCongestedFinalFinalFinalVersion2EditFinal.csv")
+Safetynet_non <- read.csv("map_times_safetynet_noncongested.csv")
 
 ## Find minimum travel times
 
@@ -21,6 +26,8 @@ Primary_con_min  <- apply(Primary_con[,19:21] , 1, FUN=min, na.rm=TRUE)
 Primary_non_min  <- apply(Primary_non[,19:21] , 1, FUN=min, na.rm=TRUE)
 Medicare_con_min <- apply(Medicare_con[,19:21], 1, FUN=min, na.rm=TRUE)
 Medicare_non_min <- apply(Medicare_non[,19:21], 1, FUN=min, na.rm=TRUE)
+Safety_con_min   <- apply(Safetynet_con[,19:21], 1, FUN=min, na.rm=TRUE)
+Safety_non_min   <- apply(Safetynet_non[,19:21], 1, FUN=min, na.rm=TRUE)
 
 ## Add NA values to where the API gapped
 
@@ -30,6 +37,8 @@ Primary_con_min[Primary_con_min == Inf]   <- NA
 Primary_non_min[Primary_non_min == Inf]   <- NA
 Medicare_non_min[Medicare_non_min == Inf] <- NA
 Medicare_con_min[Medicare_con_min == Inf] <- NA
+Safety_con_min[Safety_con_min == Inf] <- NA
+Safety_non_min[Safety_non_min == Inf] <- NA
 
 ## Bring it in
 
@@ -39,7 +48,13 @@ Aim2Data <- data.frame(GEOID                = Hospital_con$GEOID,
                        PrimaryCongested     = Primary_con_min,
                        PrimaryUncogested    = Primary_non_min,
                        MedicareCongested    = Medicare_con_min,
-                       MedicareNonCongested = Medicare_non_min)
+                       MedicareNonCongested = Medicare_non_min,
+                       HostpitalDistance    = Hospital_con$Dist_1,
+                       MedicareDistance     = Medicare_con$Dist_1,
+                       PrimaryDistance      = Primary_con$Dist_1,
+                       SafetyDistance       = Safetynet_con$Dist_1,
+                       SafetynetCongested   = Safety_con_min,
+                       SafetynetUncongested = Safety_non_min)
 
 ## Load 500 Citites Data
 ## Remove lines that are 1) Not in CA 2) city level and not tract level

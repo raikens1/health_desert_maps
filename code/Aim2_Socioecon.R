@@ -1,3 +1,7 @@
+######################
+##  Michael Chavez  ##
+######################
+
 ## My harddrive (Harddrive = Qi Lab scSeq+CyTOF Drive)
 setwd("E:/BMI_212/")
 
@@ -52,12 +56,21 @@ corrSocioecon <- function(Data, Parameter, Prefix){
 
 HospitalCongested  <- corrSocioecon(Aim2Data, "HospitalCongested", "Correlations_")
 HospitalUncogested <- corrSocioecon(Aim2Data, "HospitalNonCongested", "Correlations_")
+HospitalDistance   <- corrSocioecon(Aim2Data, "HostpitalDistance", "Correlations_")
 
 PrimaryCongested  <- corrSocioecon(Aim2Data, "PrimaryCongested", "Correlations_")
 PrimaryUncogested <- corrSocioecon(Aim2Data, "PrimaryUncogested", "Correlations_")
+PrimaryDistance   <- corrSocioecon(Aim2Data, "PrimaryDistance", "Correlations_")
 
 MedicareCongested  <- corrSocioecon(Aim2Data, "MedicareCongested", "Correlations_")
 MedicareUncogested <- corrSocioecon(Aim2Data, "MedicareNonCongested", "Correlations_")
+MedicareDistance   <- corrSocioecon(Aim2Data, "MedicareDistance", "Correlations_")
+
+SafetyCongested  <- corrSocioecon(Aim2Data, "SafetynetCongested", "Correlations_")
+SafetyUncogested <- corrSocioecon(Aim2Data, "SafetynetUncongested", "Correlations_")
+SafetyDistance   <- corrSocioecon(Aim2Data, "SafetyDistance", "Correlations_")
+
+
 
 ## Split data by rural/urban by size of census tract
 ## tracts in top 80% are rural
@@ -70,23 +83,37 @@ Rural  <- Aim2Data[Aim2Data$ALAND >  Fifths[4],]
 
 Urban_HospitalCongested  <- corrSocioecon(Urban, "HospitalCongested", "Correlations_Urban_")
 Urban_HospitalUncogested <- corrSocioecon(Urban, "HospitalNonCongested", "Correlations_Urban_")
+Urban_HospitalDistance   <- corrSocioecon(Urban, "HostpitalDistance", "Correlations_Urban_")
 
 Urban_PrimaryCongested  <- corrSocioecon(Urban, "PrimaryCongested", "Correlations_Urban_")
 Urban_PrimaryUncogested <- corrSocioecon(Urban, "PrimaryUncogested", "Correlations_Urban_")
+Urban_PrimaryDistance   <- corrSocioecon(Urban, "PrimaryDistance", "Correlations_Urban_")
 
 Urban_MedicareCongested  <- corrSocioecon(Urban, "MedicareCongested", "Correlations_Urban_")
 Urban_MedicareUncogested <- corrSocioecon(Urban, "MedicareNonCongested", "Correlations_Urban_")
+Urban_MedicareDistance   <- corrSocioecon(Urban, "MedicareDistance", "Correlations_Urban_")
+
+Urban_SafetyCongested  <- corrSocioecon(Urban, "SafetynetCongested", "Correlations_Urban_")
+Urban_SafetyUncogested <- corrSocioecon(Urban, "SafetynetUncongested", "Correlations_Urban_")
+Urban_SafetyDistance   <- corrSocioecon(Urban, "SafetyDistance", "Correlations_Urban_")
 
 ## Redo analysis for rural
 
 Rural_HospitalCongested  <- corrSocioecon(Rural, "HospitalCongested", "Correlations_Rural_")
 Rural_HospitalUncogested <- corrSocioecon(Rural, "HospitalNonCongested", "Correlations_Rural_")
+Rural_HospitalDistance   <- corrSocioecon(Rural, "HostpitalDistance", "Correlations_Rural_")
 
 Rural_PrimaryCongested  <- corrSocioecon(Rural, "PrimaryCongested", "Correlations_Rural_")
 Rural_PrimaryUncogested <- corrSocioecon(Rural, "PrimaryUncogested", "Correlations_Rural_")
+Rural_PrimaryDistance   <- corrSocioecon(Rural, "PrimaryDistance", "Correlations_Rural_")
 
 Rural_MedicareCongested  <- corrSocioecon(Rural, "MedicareCongested", "Correlations_Rural_")
 Rural_MedicareUncogested <- corrSocioecon(Rural, "MedicareNonCongested", "Correlations_Rural_")
+Rural_MedicareDistance   <- corrSocioecon(Rural, "MedicareDistance", "Correlations_Rural_")
+
+Rural_SafetyCongested  <- corrSocioecon(Rural, "SafetynetCongested", "Correlations_Rural_")
+Rural_SafetyUncogested <- corrSocioecon(Rural, "SafetynetUncongested", "Correlations_Rural_")
+Rural_SafetyDistance   <- corrSocioecon(Rural, "SafetyDistance", "Correlations_Rural_")
 
 
 
